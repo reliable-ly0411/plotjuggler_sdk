@@ -223,7 +223,11 @@ TEST_F(PluginCatalogTest, UnicodeExtensionPathLoadsOnWindows) {
   const std::filesystem::path unicode_dir = dir_ / std::filesystem::path(u8"插件-π");
   std::filesystem::create_directories(unicode_dir);
   const std::filesystem::path plugin_path = unicode_dir / pluginFileName("unicode_plugin");
-  std::filesystem::copy_file(PJ_MOCK_DATA_SOURCE_PLUGIN_PATH, plugin_path);
+  // CMake emits this path as UTF-8. A narrow path uses the Windows ACP,
+  // which corrupts non-ASCII build roots before the loader is exercised.
+  const std::filesystem::path source_path(u8"" PJ_MOCK_DATA_SOURCE_PLUGIN_PATH);
+  ASSERT_TRUE(std::filesystem::is_regular_file(source_path));
+  std::filesystem::copy_file(source_path, plugin_path);
 
   auto descriptor = inspectPluginDso(plugin_path);
   ASSERT_TRUE(descriptor.has_value()) << descriptor.error();
