@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 def main():
     if os.name != 'nt':
         raise RuntimeError('Windows MSVC runner required')
+    sys.stdout.reconfigure(encoding='utf-8')
     source = Path(__file__).resolve().parents[2]
     root = Path(os.environ['RUNNER_TEMP'])
     build = root / 'SDK 中文 build'
@@ -37,7 +38,8 @@ def main():
         '-o', 'plotjuggler_sdk/*:with_tests=True')
     run('cmake', '-S', source, '-B', build, '-G', 'Visual Studio 17 2022', '-A', 'x64',
         '-DCMAKE_TOOLCHAIN_FILE=' + str(build / 'conan_toolchain.cmake'),
-        '-DCMAKE_CXX_FLAGS_INIT=/utf-8', '-DPJ_WARNINGS_AS_ERRORS=ON')
+        '-DCMAKE_CXX_FLAGS_INIT=/utf-8', '-DPJ_WARNINGS_AS_ERRORS=ON',
+        '-DPJ_BUILD_TESTS=ON', '-DPJ_BUILD_PORTED_PLUGINS=OFF')
     run('cmake', '--build', build, '--config', 'RelWithDebInfo',
         '--target', 'plugin_catalog_test', '--parallel', '2')
     cache = (build / 'CMakeCache.txt').read_text(encoding='utf-8')
@@ -66,3 +68,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
